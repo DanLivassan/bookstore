@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "bookstore"
+version = "0.1.0"
+description = "Projeto do curso da EBAC"
+authors = ["DanLivassan <daniloxc@msn.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pytest = "^7.0.0"
+Django = "^4.0.2"
+factory-boy = "^3.2.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

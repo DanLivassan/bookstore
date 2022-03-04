@@ -1,4 +1,3 @@
-from unicodedata import category
 from rest_framework import serializers
 from product.models import Product, Category
 
@@ -10,8 +9,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(required=True, many=True)
+    category = CategorySerializer(read_only=True, many=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), write_only=True, many=True)
 
     class Meta:
         model = Product
-        fields = ("id", "title", "description", "category", "price", "active")
+        fields = ("id", "title", "description", "category",
+                  "price", "active", "category_ids")
+
+    def create(self, validated_data):
+        categories_data = validated_data.pop('category_ids')
+        product = Product.objects.create(**validated_data)
+        for category in categories_data:
+            product.category.add(category)
+        return product

@@ -7,6 +7,7 @@ from product.models import Product
 from order.models import Order
 from rest_framework import status
 from rest_framework.test import APIClient
+MAX_PER_PAGE = 5
 
 
 def sample_user(email='test@mail.com', password='Sstring1'):
@@ -76,7 +77,7 @@ class PublicApiTests(TestCase):
         user = sample_user()
         sample_order(user=user, products=products)
         response = self.client.get(url)
-        api_order = response.data[0]
+        api_order = response.data['results'][0]
 
         self.assertEqual(api_order['total'], total)
         self.assertEqual(len(api_order['products']), 5)

@@ -6,6 +6,7 @@ from product.serializers import ProductSerializer
 from product.models import Category, Product
 from rest_framework.test import APIClient
 from rest_framework import status
+MAX_PER_PAGE = 5
 
 
 def sample_user(email='test@mail.com', password='Sstring1'):
@@ -57,20 +58,20 @@ class PublicApiTests(TestCase):
     def test_get_product_list(self):
         """Test that products are retrieved porperly"""
         url = reverse('product-list', args=['v1'])
-        for i in range(6):
+        for i in range(MAX_PER_PAGE):
             sample_product()
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 6)
+        self.assertEqual(len(response.data['results']), MAX_PER_PAGE)
 
     def test_get_category_list(self):
         """Test that products are retrieved porperly"""
         url = reverse('category-list', args=['v1'])
-        for i in range(6):
+        for i in range(MAX_PER_PAGE):
             sample_category(slug=f'slug{i}')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 6)
+        self.assertEqual(len(response.data['results']), MAX_PER_PAGE)
 
     def test_create_new_category(self):
         """Test the creating new category"""

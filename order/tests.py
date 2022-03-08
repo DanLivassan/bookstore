@@ -65,6 +65,20 @@ class PublicApiTests(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
 
+    def test_that_write_methods_fails(self):
+        """Test if unauthenticated user perform write methods fails"""
+        url = reverse('product-list', args=['v1'])
+        post_response = self.client.post(url, {})
+        put_response = self.client.put(url, {})
+        patch_response = self.client.patch(url, {})
+
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         post_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         put_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         patch_response.status_code)
+
     def test_get_order_list(self):
         """Test that orders are retrieved porperly and if the sum of prices matches with sum of products price"""
         url = reverse('order-list', args=['v1'])
@@ -81,6 +95,13 @@ class PublicApiTests(TestCase):
 
         self.assertEqual(api_order['total'], total)
         self.assertEqual(len(api_order['products']), 5)
+
+
+class PrivateApiTest(TestCase):
+    def setUp(self) -> None:
+        self.user = sample_user(email='authenticated@mail.com')
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
 
     def test_create_a_new_order(self):
         """Test that an order are created porperly"""

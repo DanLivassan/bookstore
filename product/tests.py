@@ -55,6 +55,20 @@ class PublicApiTests(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
 
+    def test_that_write_methods_fails(self):
+        """Test if unauthenticated user perform write methods fails"""
+        url = reverse('product-list', args=['v1'])
+        post_response = self.client.post(url, {})
+        put_response = self.client.put(url, {})
+        patch_response = self.client.patch(url, {})
+
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         post_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         put_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN,
+                         patch_response.status_code)
+
     def test_get_product_list(self):
         """Test that products are retrieved porperly"""
         url = reverse('product-list', args=['v1'])
@@ -73,19 +87,12 @@ class PublicApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), MAX_PER_PAGE)
 
-    def test_create_new_category(self):
-        """Test the creating new category"""
-        url = reverse('category-list', args=['v1'])
 
-        category_payload = {
-            'title': 'title',
-            'slug': 'slug123',
-            'description': 'description'
-        }
-        response = self.client.post(url, category_payload)
-        categories = Category.objects.all()
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(categories.count(), 1)
+class PrivateApiTest(TestCase):
+    def setUp(self) -> None:
+        self.user = sample_user()
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
 
     def test_create_new_products(self):
         """Test the product creation with categories"""
@@ -107,3 +114,17 @@ class PublicApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(products.count(), 2)
         self.assertEqual(products[0].category.count(), 2)
+
+    def test_create_new_category(self):
+        """Test the creating new category"""
+        url = reverse('category-list', args=['v1'])
+
+        category_payload = {
+            'title': 'title',
+            'slug': 'slug123',
+            'description': 'description'
+        }
+        response = self.client.post(url, category_payload)
+        categories = Category.objects.all()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(categories.count(), 1)
